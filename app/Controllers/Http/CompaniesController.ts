@@ -20,11 +20,9 @@ export default class CompaniesController {
   }
 
   public async show({ response, auth }: HttpContextContract) {
-    const [userQuery] = await User.query().preload('companies', (QueryComp) => {
-      QueryComp.where('user_id', auth.user!.id)
-    })
+    const companies = await Company.query().where('user_id', auth.user!.id)
 
-    response.accepted({ response: userQuery.companies })
+    response.accepted({ response: companies })
   }
 
   public async update({ response, request, auth }: HttpContextContract) {
@@ -92,7 +90,9 @@ export default class CompaniesController {
   private async verifyIfUserIdIsAStaffMember(userId: number, company: Company) {
     if (company.userId === userId) return true
     else {
-      const [com] = await Staff.query().where('member_id', userId)
+      const [com] = await Staff.query()
+        .where('member_id', userId)
+        .andWhere('company_id', company.id)
       if (com) return true
       else return false
     }

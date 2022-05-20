@@ -17,6 +17,13 @@ export default class StoreValidator {
       []
     ),
     phoneNumber: schema.string.optional([rules.mobile()]),
+    salesCompany: schema.string({}, [
+      rules.exists({
+        table: 'sale_companies',
+        column: 'name',
+        where: { company_id: this.ctx.request.param('companyId') },
+      }),
+    ]),
   })
 
   public messages = {}

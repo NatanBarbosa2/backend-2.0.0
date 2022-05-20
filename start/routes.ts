@@ -60,3 +60,19 @@ Route.delete(
   '/api/groupRequest/:companyId/:id/:groupId/:type',
   'GroupsRequestsController.destroy'
 ).middleware('auth')
+
+// sales_company <Criar companha de venda>
+Route.post('/api/salesCompany/:companyId', 'SalesCompaniesController.store').middleware('auth')
+Route.get('/api/salesCompany/:companyId/:id/:type', 'SalesCompaniesController.show').middleware(
+  'auth'
+)
+Route.delete('/api/salesCompany/:companyId/:id', 'SalesCompaniesController.destroy').middleware(
+  'auth'
+)
+
+// date <Como foi meu dia>
+Route.post('/api/datum/:companyId', 'DataController.store').middleware('auth')
+
+// chart <Controle do BI>
+Route.get('/api/chartSaller/:questId', 'ChartsController.showSaller').middleware('auth')
+Route.get('/api/chartGroup/:questId', 'ChartsController.showGroups').middleware('auth')

@@ -4,6 +4,7 @@ import Staff from './Staff'
 import User from './User'
 import Member from './Member'
 import Group from './Group'
+import SaleCompany from './SaleCompany'
 
 export default class Company extends BaseModel {
   @column({ isPrimary: true })
@@ -23,6 +24,9 @@ export default class Company extends BaseModel {
 
   @hasMany(() => Group)
   public group: HasMany<typeof Group>
+
+  @hasMany(() => SaleCompany)
+  public sale_comapany: HasMany<typeof SaleCompany>
 
   @belongsTo(() => User)
   public user: BelongsTo<typeof User>

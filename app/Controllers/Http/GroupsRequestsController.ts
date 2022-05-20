@@ -63,7 +63,9 @@ export default class GroupsRequestsController {
   private async verifyIfUserIdIsAStaffMember(userId: number, company: Company) {
     if (company.userId === userId) return true
     else {
-      const [com] = await Staff.query().where('member_id', userId)
+      const [com] = await Staff.query()
+        .where('member_id', userId)
+        .andWhere('company_id', company.id)
       if (com) return true
       else return false
     }

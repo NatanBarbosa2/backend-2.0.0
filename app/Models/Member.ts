@@ -4,11 +4,14 @@ import {
   BelongsTo,
   belongsTo,
   column,
+  HasMany,
+  hasMany,
   ManyToMany,
   manyToMany,
 } from '@ioc:Adonis/Lucid/Orm'
 import Company from './Company'
 import Group from './Group'
+import Datum from './Datum'
 
 export default class Member extends BaseModel {
   @column({ isPrimary: true })
@@ -49,6 +52,9 @@ export default class Member extends BaseModel {
     pivotRelatedForeignKey: 'group_id',
   })
   public groups: ManyToMany<typeof Group>
+
+  @hasMany(() => Datum)
+  public datas: HasMany<typeof Datum>
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime

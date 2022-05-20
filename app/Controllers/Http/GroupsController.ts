@@ -27,7 +27,10 @@ export default class GroupsController {
     if (!isStaff) throw new BadRequestException('Acesso negado para fazer essa alteração')
 
     if (type === 'all') {
-      const groups = await Group.query().where('company_id', companyId).preload('members')
+      const groups = await Group.query()
+        .where('company_id', companyId)
+        .preload('members')
+        .preload('quests')
       return response.accepted({ response: groups })
     }
 
@@ -66,7 +69,9 @@ export default class GroupsController {
   private async verifyIfUserIdIsAStaffMember(userId: number, company: Company) {
     if (company.userId === userId) return true
     else {
-      const [com] = await Staff.query().where('member_id', userId)
+      const [com] = await Staff.query()
+        .where('member_id', userId)
+        .andWhere('company_id', company.id)
       if (com) return true
       else return false
     }

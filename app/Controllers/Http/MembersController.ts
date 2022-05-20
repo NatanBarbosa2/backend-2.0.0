@@ -11,11 +11,14 @@ import Member from 'App/Models/Member'
 import Update from 'App/Validators/Member/UpdateValidator'
 import Staff from 'App/Models/Staff'
 import Group from 'App/Models/Group'
+import SaleCompany from 'App/Models/SaleCompany'
 
 export default class MembersController {
   public async store({ request, response, auth }: HttpContextContract) {
     const id = request.param('companyId')
-    const { email, name, password, type, group } = await request.validate(StoreValidator)
+    const { email, name, password, type, group, salesCompany } = await request.validate(
+      StoreValidator
+    )
 
     const company = await Company.findOrFail(id)
     const isStaff = await this.verifyIfUserIdIsAStaffMember(auth.user!.id, company)
@@ -26,13 +29,18 @@ export default class MembersController {
     if (type === 'gestor' || type === 'gerente' || type === 'supervisor')
       await this.createStaff(id, member)
 
-    if (!(await Group.findBy('name', group))) {
-      const groupRelated = await company.related('group').create({ name })
-      await groupRelated.related('members').create(member)
+    let groupExists = await Group.findBy('name', group)
+
+    if (!groupExists) {
+      groupExists = await company.related('group').create({ name })
+      await groupExists.related('members').create(member)
     } else {
-      const groupRelated = await Group.findByOrFail('name', group)
-      await groupRelated.related('members').create(member)
+      groupExists = await Group.findByOrFail('name', group)
+      await groupExists.related('members').create(member)
     }
+
+    const saleCompany = await SaleCompany.findByOrFail('name', salesCompany)
+    await saleCompany.related('groups').create(groupExists!)
 
     await User.create({ email: member.email, name: member.name, password: member.password })
     response.created({ response: member })
@@ -51,6 +59,7 @@ export default class MembersController {
         .where('id', companyId)
         .preload('member', (QueryMember) => {
           QueryMember.preload('groups')
+          QueryMember.preload('datas')
         })
       return response.accepted({ response: company.member })
     }
@@ -102,7 +111,9 @@ export default class MembersController {
   private async verifyIfUserIdIsAStaffMember(userId: number, company: Company) {
     if (company.userId === userId) return true
     else {
-      const [com] = await Staff.query().where('member_id', userId)
+      const [com] = await Staff.query()
+        .where('member_id', userId)
+        .andWhere('company_id', company.id)
       if (com) return true
       else return false
     }
